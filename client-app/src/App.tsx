@@ -9,7 +9,7 @@ class App extends Component {
      values:[]
   }
   componentDidMount(){
-    axios.get('http://localhost:5000/values')
+    axios.get('http://localhost:5000/api/values')
     .then((response)=>{
       console.log(response);
       this.setState({
