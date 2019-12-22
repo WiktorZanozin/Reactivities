@@ -18,9 +18,6 @@ const ActivityForm:React.FC<RouteComponentProps<DetailParams>>=({match, history}
         loadActivity,
         clearActivity
         }=activityStore;
-  
-        
-
  
   const [activity, setActivity]=useState<IActivity>({
     id:'',

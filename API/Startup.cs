@@ -14,6 +14,8 @@ using Persistence;
 using Microsoft.EntityFrameworkCore;
 using Application.Activities;
 using MediatR;
+using FluentValidation.AspNetCore;
+using API.Middleware;
 
 namespace API
 {
@@ -30,6 +32,9 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
              services.AddControllers();
+             services.AddMvc()
+                     .AddFluentValidation(cfg => cfg.RegisterValidatorsFromAssemblyContaining<Create>())
+                     .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
              services.AddDbContext<DataContext>(opt => 
             {
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
@@ -47,9 +52,10 @@ namespace API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+               // app.UseDeveloperExceptionPage();
             }
 
             app.UseHttpsRedirection();

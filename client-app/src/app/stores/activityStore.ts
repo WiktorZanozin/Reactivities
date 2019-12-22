@@ -74,7 +74,7 @@ class ActivityStore {
       runInAction('edit activity error', () => {
         this.submitting = false;
       })
-      console.log(error);
+    throw error; 
     }
   };
 
@@ -117,7 +117,7 @@ class ActivityStore {
       runInAction('get activity error', ()=>{
         this.loadingInitial=false
       })
-      console.log(error);
+      throw error;
     }
 
     }
