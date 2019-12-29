@@ -27,7 +27,7 @@ namespace API.Controllers
            return await Mediator.Send(command);
          }
 
-         [HttpPost("register")]
+         [HttpGet]
          public async Task<ActionResult<User>> CurrentUser()
          {
            return await Mediator.Send(new CurrentUser.Query());
