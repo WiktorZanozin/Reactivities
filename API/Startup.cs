@@ -26,8 +26,10 @@ using Domain;
 using Application.Interfaces;
 using Infrastructure.Security;
 using System.Text;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 namespace API
 {
@@ -52,15 +54,19 @@ namespace API
                 });
             });
             services.AddMediatR(typeof(List.Handler).Assembly);
-             services.AddMvc(opt=>
+            services.AddAutoMapper(typeof(List.Handler));
+            services.AddMvc(opt=>
              {
                var policy=new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                opt.Filters.Add(new AuthorizeFilter(policy));
              })
                      .AddFluentValidation(cfg => cfg.RegisterValidatorsFromAssemblyContaining<Create>())
-                     .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+                     .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+                     .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            
              services.AddDbContext<DataContext>(opt => 
             {
+                opt.UseLazyLoadingProxies();
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
               services.TryAddSingleton<ISystemClock, SystemClock>();
@@ -68,6 +74,15 @@ namespace API
               var identityBuilder = new IdentityBuilder(builder.UserType,  builder.Services);
               identityBuilder.AddEntityFrameworkStores<DataContext>();
               identityBuilder.AddSignInManager<SignInManager<AppUser>>();
+
+            services.AddAuthorization(opt => 
+            {
+                opt.AddPolicy("IsActivityHost", policy =>
+                {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
               var key=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
               services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
               .AddJwtBearer(opt=>
