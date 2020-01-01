@@ -1,23 +1,32 @@
 import React, { useContext } from 'react'
-import { Item, Button, Segment, Icon } from 'semantic-ui-react'
+import { Item, Button, Segment, Icon, Label } from 'semantic-ui-react'
 import { Link } from 'react-router-dom'
-import ActivityStore from '../../../app/stores/activityStore'
 import { IActivity } from '../../../app/models/activity'
 import {format} from 'date-fns'
+import  ActivityListItemAttendee  from './ActivityListItemAttendee'
+
 
 export const ActivityListItem :React.FC<{activity:IActivity}> = ({activity}) => {
+  const host=activity.attendees.filter(x=>x.isHost)[0];
     return (
       <Segment.Group>
-
         <Segment>
         <Item.Group>
         <Item>
-        <Item.Image size='tiny' circular src='/assets/user.png' />
+        <Item.Image size='tiny' circular src={host.image || '/assets/user.png'} />
         <Item.Content>
-          <Item.Header as='a'>{activity.title}</Item.Header>
+          <Item.Header as={Link} to={`/activities/${activity.id}`}>{activity.title}</Item.Header>
           <Item.Description>
-            Hosted by Bob
+            Hosted by {host.displayName}
           </Item.Description>
+          {activity.isHost &&
+          <Item.Description>
+            <Label basic color='orange' content='You are hosting this'/>
+          </Item.Description>}
+          {activity.isGoing && !activity.isHost &&
+          <Item.Description>
+            <Label basic color='green' content='You are going to this activity'/>
+          </Item.Description>}
           </Item.Content>
          </Item>
         </Item.Group>
@@ -28,7 +37,7 @@ export const ActivityListItem :React.FC<{activity:IActivity}> = ({activity}) => 
           <Icon name='marker' />{activity.venue}, {activity.city}
         </Segment>
         <Segment secondary>
-           Attendees will go here
+          <ActivityListItemAttendee attendees={activity.attendees}/>
         </Segment>
         <Segment clearing>
         <span>{activity.description}</span>
