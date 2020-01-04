@@ -6,7 +6,7 @@ import {history} from '../..';
 import { toast } from 'react-toastify';
 import {RootStore} from './rootStore';
 import { setActivityProps, createAttendee } from '../common/util/util';
-import { is } from 'date-fns/locale';
+
 
 configure({enforceActions: 'always'});
 
