@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
@@ -29,8 +23,8 @@ using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Infrastructure.Photos;
+using API.SignalR;
 
 namespace API
 {
@@ -51,11 +45,13 @@ namespace API
             {
                 opt.AddPolicy("CorsPolicy", policy => 
                 {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+                    policy.AllowAnyHeader().AllowAnyMethod()
+                    .WithOrigins("http://localhost:3000").AllowCredentials();
                 });
             });
             services.AddMediatR(typeof(List.Handler).Assembly);
             services.AddAutoMapper(typeof(List.Handler));
+            services.AddSignalR();
             services.AddMvc(opt=>
              {
                var policy=new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
@@ -95,6 +91,21 @@ namespace API
                       ValidateAudience=false,
                       ValidateIssuer=false
                   };
+                  opt.Events=new JwtBearerEvents
+                  { 
+                      OnMessageReceived=context=>
+                      {
+                          var accessToken=context.Request.Query["access_token"];
+                          var path=context.HttpContext.Request.Path;
+                          if(!string.IsNullOrEmpty(accessToken) &&
+                          (path.StartsWithSegments("/chat")))
+                          {
+                              context.Token=accessToken;
+                          }
+                          return Task.CompletedTask;
+                      }
+
+                  };
               });
               services.AddScoped<IJwtGenerator, JwtGenerator>();
               services.AddScoped<IUserAccessor, UserAccessor>();
@@ -118,6 +129,7 @@ namespace API
             app.UseAuthorization();
             app.UseAuthentication();
             app.UseCors("CorsPolicy");
+            app.UseSignalR(routes=>{routes.MapHub<ChatHub>("/chat");});
 
             app.UseEndpoints(endpoints =>
             {
