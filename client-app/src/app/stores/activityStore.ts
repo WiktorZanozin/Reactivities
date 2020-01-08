@@ -1,4 +1,4 @@
-import { observable, action, computed, runInAction } from 'mobx';
+import { observable, action, computed, runInAction} from 'mobx';
 import { SyntheticEvent } from 'react';
 import { IActivity } from '../models/activity';
 import agent from '../api/agent';
@@ -9,9 +9,12 @@ import { setActivityProps, createAttendee } from '../common/util/util';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 
 export default class ActivityStore {
+
   rootStore: RootStore;
+  
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+
   }
 
   @observable activityRegistry = new Map();
