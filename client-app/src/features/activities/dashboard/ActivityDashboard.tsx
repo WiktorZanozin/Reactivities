@@ -6,6 +6,7 @@ import {LoadingComponent} from '../../../app/layout/LoadingComponent';
 import { RootStoreContext } from '../../../app/stores/rootStore';
 import InfiniteScroll from 'react-infinite-scroller';
 import ActivityFilters from './ActivityFilters';
+import ActivityListItemPlaceholder from './ActivityListitemPlaceholder';
 
 const ActivityDashboard: React.FC = () => {
 
@@ -29,13 +30,15 @@ const ActivityDashboard: React.FC = () => {
   return (
     <Grid>
       <Grid.Column width={10}>
-
-        <InfiniteScroll
-        pageStart={0}
-        loadMore={handleGetNext}
-        hasMore={!loadingNext && page+1<totalPages}
-        initialLoad={false}/>
-
+         {loadingInitial && page===0? <ActivityListItemPlaceholder/>:(
+            <InfiniteScroll
+            pageStart={0}
+            loadMore={handleGetNext}
+            hasMore={!loadingNext && page+1<totalPages}
+            initialLoad={false}/>
+    
+         )}
+       
         <ActivityList />
       </Grid.Column>
       <Grid.Column width={6}>
